@@ -12,10 +12,10 @@
 ## DB・バックエンド
 - [x] migration: applications migration を作成（user_id に FK & index を付与）
 - [x] migrate: `php artisan migrate` を実行してテーブル作成を確認
-- [ ] model: Applicationモデル + user relation（$fillable / casts を設定）
-- [ ] request: FormRequest（StoreApplicationRequest / UpdateApplicationRequest）を作成してバリデーションを定義
-- [ ] policy/auth: 簡易 Policy かコントローラ内チェックで `user_id == auth()->id()` を担保
-- [ ] controller: ApplicationController (index, store, update, destroy, updateStatus) を作成（バリデーション使用）
+- [x] model: Applicationモデル + user relation（$fillable / casts を設定）
+- [x] request: FormRequest（StoreApplicationRequest / UpdateApplicationRequest）を作成してバリデーションを定義
+- [x] policy/auth: 簡易 Policy かコントローラ内チェックで `user_id == auth()->id()` を担保
+- [x] controller: ApplicationController (index, store, update, destroy, updateStatus) を作成（バリデーション使用）
 - [ ] routes: web.php にルート追加・ミドルウェア auth を付与
 
 ## フロント
