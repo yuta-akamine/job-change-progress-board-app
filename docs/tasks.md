@@ -1,18 +1,17 @@
 # タスク
 
 ## 準備
-- [ ] init: feature ブランチを切る（例: feature/mvp） & commit requirements.md
 - [ ] env: .env.example をコピーして .env を作成、APP_KEY を生成（`php artisan key:generate`）
-- [ ] deps: Composer と npm の依存をインストール（`composer install` / `./vendor/bin/sail npm ci`）
-- [ ] sail: Sail コンテナを起動して動作確認（`./vendor/bin/sail up -d`）
+- [x] deps: Composer と npm の依存をインストール（`composer install` / `./vendor/bin/sail npm ci`）
+- [x] sail: Sail コンテナを起動して動作確認（`./vendor/bin/sail up -d`）
 
 ## 認証（先に行う：users テーブルを確実に用意するため）
-- [ ] breeze: Laravel Breeze インストール & 認証 scaffold（React + Inertia 版）
-- [ ] migrate-users: 認証に必要なマイグレーションを実行（users テーブルが作成されることを確認）
+- [x] breeze: Laravel Breeze インストール & 認証 scaffold（React + Inertia 版）
+- [x] migrate-users: 認証に必要なマイグレーションを実行（users テーブルが作成されることを確認）
 
 ## DB・バックエンド
-- [ ] migration: applications migration を作成（user_id に FK & index を付与）
-- [ ] migrate: `php artisan migrate` を実行してテーブル作成を確認
+- [x] migration: applications migration を作成（user_id に FK & index を付与）
+- [x] migrate: `php artisan migrate` を実行してテーブル作成を確認
 - [ ] model: Applicationモデル + user relation（$fillable / casts を設定）
 - [ ] request: FormRequest（StoreApplicationRequest / UpdateApplicationRequest）を作成してバリデーションを定義
 - [ ] policy/auth: 簡易 Policy かコントローラ内チェックで `user_id == auth()->id()` を担保
