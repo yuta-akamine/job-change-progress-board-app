@@ -16,7 +16,7 @@
 - [x] request: FormRequest（StoreApplicationRequest / UpdateApplicationRequest）を作成してバリデーションを定義
 - [x] policy/auth: 簡易 Policy かコントローラ内チェックで `user_id == auth()->id()` を担保
 - [x] controller: ApplicationController (index, store, update, destroy, updateStatus) を作成（バリデーション使用）
-- [ ] routes: web.php にルート追加・ミドルウェア auth を付与
+- [x] routes: web.php にルート追加・ミドルウェア auth を付与
 
 ## フロント
 - [ ] inertia_page: ダッシュボードページ (Inertia) を作成 + applications を取得して渡す
