@@ -1,6 +1,28 @@
 import { Head, Link } from '@inertiajs/react';
 
-export default function Welcome({ auth, laravelVersion, phpVersion }) {
+interface User {
+    id: number;
+    name: string;
+    email: string;
+}
+
+interface Auth {
+    user: User | null;
+}
+
+interface Props {
+    auth: Auth;
+    laravelVersion: string;
+    phpVersion: string;
+    canLogin?: boolean;
+    canRegister?: boolean;
+}
+
+export default function Welcome({
+    auth,
+    laravelVersion,
+    phpVersion,
+}: Props) {
     const handleImageError = () => {
         document
             .getElementById('screenshot-container')
@@ -359,3 +381,4 @@ export default function Welcome({ auth, laravelVersion, phpVersion }) {
         </>
     );
 }
+
