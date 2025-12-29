@@ -1,5 +1,10 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import {
+    KANBAN_STATUSES,
+    ARCHIVED_STATUSES,
+    Status,
+} from '@/constants/statuses';
 
 interface Application {
     id: number;
@@ -17,28 +22,25 @@ interface Props {
     applications: Application[];
 }
 
-const STATUS_ORDER = [
-    'カジュアル面談',
-    '応募予定',
-    '書類選考',
-    '筆記試験',
-    '面接',
-    '内定',
-    '辞退/見送り',
-];
-
 export default function Dashboard({ applications }: Props) {
-    // applications を status ごとに groupBy
+    // applications を status ごとに groupBy（未知ステータスは 'その他' に集約）
     const groupedByStatus = applications.reduce(
         (acc, application) => {
             const status = application.status;
-            if (!acc[status]) {
-                acc[status] = [];
+            const normalizedStatus: Status =
+                [...KANBAN_STATUSES, ...ARCHIVED_STATUSES].includes(
+                    status as Status,
+                )
+                    ? (status as Status)
+                    : 'その他';
+
+            if (!acc[normalizedStatus]) {
+                acc[normalizedStatus] = [];
             }
-            acc[status].push(application);
+            acc[normalizedStatus].push(application);
             return acc;
         },
-        {} as Record<string, Application[]>,
+        {} as Partial<Record<Status, Application[]>>,
     );
 
     return (
@@ -58,35 +60,141 @@ export default function Dashboard({ applications }: Props) {
                             <h3 className="text-lg font-semibold mb-6">
                                 Applications ({applications.length})
                             </h3>
-                            <div className="space-y-6">
-                                {STATUS_ORDER.map((status) => {
-                                    const statusApplications = groupedByStatus[status] || [];
+
+                            {/* KANBAN ステータス群 */}
+                            <div className="space-y-6 mb-8">
+                                {KANBAN_STATUSES.map((status) => {
+                                    const statusApplications =
+                                        groupedByStatus[status] || [];
                                     return (
-                                        <div key={status} className="border-b border-gray-200 pb-6 last:border-b-0">
+                                        <div
+                                            key={status}
+                                            className="border-b border-gray-200 pb-6 last:border-b-0"
+                                        >
                                             <h4 className="text-md font-semibold mb-3">
                                                 {status} ({statusApplications.length})
                                             </h4>
                                             {statusApplications.length === 0 ? (
                                                 <p className="text-sm text-gray-500">
-                                                    No applications in this status.
+                                                    No applications in this
+                                                    status.
                                                 </p>
                                             ) : (
                                                 <div className="space-y-2">
-                                                    {statusApplications.map((application) => (
+                                                    {statusApplications.map(
+                                                        (application) => (
+                                                            <div
+                                                                key={
+                                                                    application.id
+                                                                }
+                                                                className="border border-gray-200 rounded p-4"
+                                                            >
+                                                                <div className="font-semibold">
+                                                                    {
+                                                                        application.company_name
+                                                                    }
+                                                                </div>
+                                                                {application.role && (
+                                                                    <div className="text-sm text-gray-600">
+                                                                        Role:{' '}
+                                                                        {
+                                                                            application.role
+                                                                        }
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {/* その他（未知ステータス） */}
+                            {groupedByStatus['その他'] &&
+                                groupedByStatus['その他'].length > 0 && (
+                                    <div className="space-y-6 mb-8">
+                                        <div className="border-b border-gray-200 pb-6">
+                                            <h4 className="text-md font-semibold mb-3">
+                                                その他 (
+                                                {groupedByStatus['その他']
+                                                    .length}
+                                                )
+                                            </h4>
+                                            <div className="space-y-2">
+                                                {groupedByStatus['その他'].map(
+                                                    (application) => (
                                                         <div
                                                             key={application.id}
                                                             className="border border-gray-200 rounded p-4"
                                                         >
                                                             <div className="font-semibold">
-                                                                {application.company_name}
+                                                                {
+                                                                    application.company_name
+                                                                }
                                                             </div>
                                                             {application.role && (
                                                                 <div className="text-sm text-gray-600">
-                                                                    Role: {application.role}
+                                                                    Role:{' '}
+                                                                    {
+                                                                        application.role
+                                                                    }
                                                                 </div>
                                                             )}
                                                         </div>
-                                                    ))}
+                                                    ),
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                            {/* ARCHIVED ステータス群（別セクション） */}
+                            <div className="space-y-6 border-t border-gray-300 pt-6">
+                                {ARCHIVED_STATUSES.map((status) => {
+                                    const statusApplications =
+                                        groupedByStatus[status] || [];
+                                    return (
+                                        <div
+                                            key={status}
+                                            className="border-b border-gray-200 pb-6 last:border-b-0"
+                                        >
+                                            <h4 className="text-md font-semibold mb-3">
+                                                {status} ({statusApplications.length})
+                                            </h4>
+                                            {statusApplications.length === 0 ? (
+                                                <p className="text-sm text-gray-500">
+                                                    No applications in this
+                                                    status.
+                                                </p>
+                                            ) : (
+                                                <div className="space-y-2">
+                                                    {statusApplications.map(
+                                                        (application) => (
+                                                            <div
+                                                                key={
+                                                                    application.id
+                                                                }
+                                                                className="border border-gray-200 rounded p-4"
+                                                            >
+                                                                <div className="font-semibold">
+                                                                    {
+                                                                        application.company_name
+                                                                    }
+                                                                </div>
+                                                                {application.role && (
+                                                                    <div className="text-sm text-gray-600">
+                                                                        Role:{' '}
+                                                                        {
+                                                                            application.role
+                                                                        }
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ),
+                                                    )}
                                                 </div>
                                             )}
                                         </div>
