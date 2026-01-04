@@ -5,15 +5,21 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { FormEventHandler } from 'react';
 
-export default function Login({ status, canResetPassword }) {
+interface Props {
+    status?: string;
+    canResetPassword?: boolean;
+}
+
+export default function Login({ status, canResetPassword }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
         remember: false,
     });
 
-    const submit = (e) => {
+    const submit: FormEventHandler = (e) => {
         e.preventDefault();
 
         post(route('login'), {
@@ -98,3 +104,4 @@ export default function Login({ status, canResetPassword }) {
         </GuestLayout>
     );
 }
+
