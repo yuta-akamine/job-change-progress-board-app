@@ -30,7 +30,7 @@ class ApplicationFactory extends Factory
             '応募予定',
             '書類選考',
             '筆記試験',
-            '面接',
+            '面接（一次〜最終）',
             '内定',
             '辞退/見送り',
         ];
