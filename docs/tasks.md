@@ -1,7 +1,7 @@
 # タスク
 
 ## 準備
-- [ ] env: .env.example をコピーして .env を作成、APP_KEY を生成（`php artisan key:generate`）
+- [x] env: .env.example をコピーして .env を作成、APP_KEY を生成（`php artisan key:generate`）
 - [x] deps: Composer と npm の依存をインストール（`composer install` / `./vendor/bin/sail npm ci`）
 - [x] sail: Sail コンテナを起動して動作確認（`./vendor/bin/sail up -d`）
 
@@ -19,7 +19,7 @@
 - [x] routes: web.php にルート追加・ミドルウェア auth を付与
 
 ## フロント
-- [ ] inertia_page: ダッシュボードページ (Inertia) を作成 + applications を取得して渡す
+- [x] inertia_page: ダッシュボードページ (Inertia) を作成 + applications を取得して渡す
 - [ ] kanban_ui: Reactでカンバン表示（列固定）を作成（cards を status 毎にレンダリング）
 - [ ] create_modal: Createフォーム（Inertia form）を作成（FormRequest のフィールドと一致）
 - [ ] drag: dnd-kit（or react-beautiful-dnd）でドラッグ実装 + PATCH /applications/{id}/status を呼ぶ（optimistic update）
@@ -29,7 +29,7 @@
 - [ ] tailwind: 最低限の見栄え調整（カード・列・モーダルのレスポンシブ確認）
 
 ## テスト・確認
-- [ ] seed: テスト用データを少量シード（開発確認用）
+- [x] seed: テスト用データを少量シード（開発確認用）
 - [ ] manual_test: 新規登録→ログイン→登録→カンバン表示→ドラッグ→DB反映 を検証
 - [ ] lint/build: `php -l` / `./vendor/bin/sail npm run build`（本番ビルドで失敗しないか確認）
 

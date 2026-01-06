@@ -17,9 +17,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // User::factory()->create([
+        //     'name' => 'Test User',
+        //     'email' => 'test@example.com',
+        // ]);
+
+        // // 開発用 Application シーダー
+        // $this->call(ApplicationsSeeder::class);
+        // 開発時にテストユーザーを1件用意（既に存在する場合は作成しない）
+        \App\Models\User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => bcrypt('password')]
+        );
+
+        // 開発用 Application シーダー
+        $this->call(ApplicationsSeeder::class);
     }
 }
