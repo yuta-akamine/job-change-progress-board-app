@@ -35,10 +35,9 @@ class ApplicationController extends Controller
      */
     public function store(StoreApplicationRequest $request): RedirectResponse
     {
-        $validated = $request->validated();
-        $validated['user_id'] = Auth::id();
-
-        Application::create($validated);
+        $application = $request->user()->applications()->create(
+            $request->validated()
+        );
 
         return Redirect::back();
     }
