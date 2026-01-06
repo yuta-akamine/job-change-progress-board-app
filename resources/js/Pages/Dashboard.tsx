@@ -1,5 +1,6 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
+import KanbanColumn from '@/Components/Kanban/KanbanColumn';
 import {
     KANBAN_STATUSES,
     ARCHIVED_STATUSES,
@@ -63,53 +64,13 @@ export default function Dashboard({ applications }: Props) {
 
                             {/* KANBAN ステータス群 */}
                             <div className="space-y-6 mb-8">
-                                {KANBAN_STATUSES.map((status) => {
-                                    const statusApplications =
-                                        groupedByStatus[status] || [];
-                                    return (
-                                        <div
-                                            key={status}
-                                            className="border-b border-gray-200 pb-6 last:border-b-0"
-                                        >
-                                            <h4 className="text-md font-semibold mb-3">
-                                                {status} ({statusApplications.length})
-                                            </h4>
-                                            {statusApplications.length === 0 ? (
-                                                <p className="text-sm text-gray-500">
-                                                    No applications in this
-                                                    status.
-                                                </p>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {statusApplications.map(
-                                                        (application) => (
-                                                            <div
-                                                                key={
-                                                                    application.id
-                                                                }
-                                                                className="border border-gray-200 rounded p-4"
-                                                            >
-                                                                <div className="font-semibold">
-                                                                    {
-                                                                        application.company_name
-                                                                    }
-                                                                </div>
-                                                                {application.role && (
-                                                                    <div className="text-sm text-gray-600">
-                                                                        Role:{' '}
-                                                                        {
-                                                                            application.role
-                                                                        }
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
+                                {KANBAN_STATUSES.map((status) => (
+                                    <KanbanColumn
+                                        key={status}
+                                        title={status}
+                                        applications={groupedByStatus[status] || []}
+                                    />
+                                ))}
                             </div>
 
                             {/* その他（未知ステータス） */}
