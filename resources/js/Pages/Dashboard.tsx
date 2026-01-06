@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head } from '@inertiajs/react';
 import KanbanColumn from '@/Components/Kanban/KanbanColumn';
+import CreateApplicationModal from '@/Components/Kanban/CreateApplicationModal';
 import {
     KANBAN_STATUSES,
     ARCHIVED_STATUSES,
@@ -24,6 +26,8 @@ interface Props {
 }
 
 export default function Dashboard({ applications }: Props) {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     // applications を status ごとに groupBy（未知ステータスは 'その他' に集約）
     const groupedByStatus = applications.reduce(
         (acc, application) => {
@@ -58,9 +62,17 @@ export default function Dashboard({ applications }: Props) {
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
                     <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                         <div className="p-6 text-gray-900">
-                            <h3 className="text-lg font-semibold mb-6">
-                                Applications ({applications.length})
-                            </h3>
+                            <div className="mb-6 flex items-center justify-between">
+                                <h3 className="text-lg font-semibold">
+                                    Applications ({applications.length})
+                                </h3>
+                                <button
+                                    onClick={() => setIsModalOpen(true)}
+                                    className="rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+                                >
+                                    + 追加
+                                </button>
+                            </div>
 
                             {/* KANBAN ステータス群 */}
                             <div className="space-y-6 mb-8">
@@ -166,6 +178,10 @@ export default function Dashboard({ applications }: Props) {
                     </div>
                 </div>
             </div>
+            <CreateApplicationModal
+                open={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+            />
         </AuthenticatedLayout>
     );
 }
