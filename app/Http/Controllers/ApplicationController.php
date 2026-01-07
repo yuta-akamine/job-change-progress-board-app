@@ -47,9 +47,7 @@ class ApplicationController extends Controller
      */
     public function update(UpdateApplicationRequest $request, Application $application): RedirectResponse
     {
-        if ($application->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('update', $application);
 
         $application->update($request->validated());
 
@@ -61,9 +59,7 @@ class ApplicationController extends Controller
      */
     public function destroy(Application $application): RedirectResponse
     {
-        if ($application->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('delete', $application);
 
         $application->delete();
 
@@ -75,9 +71,7 @@ class ApplicationController extends Controller
      */
     public function updateStatus(Request $request, Application $application): JsonResponse
     {
-        if ($application->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('updateStatus', $application);
 
         $request->validate([
             'status' => ['required', 'string', 'max:50'],
