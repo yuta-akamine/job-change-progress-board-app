@@ -1,4 +1,7 @@
+import { useState } from 'react';
+import { router } from '@inertiajs/react';
 import type { Application } from '@/types';
+import { KANBAN_STATUSES } from '@/constants/statuses';
 
 interface KanbanColumnProps {
     title: string;
@@ -6,6 +9,20 @@ interface KanbanColumnProps {
 }
 
 export default function KanbanColumn({ title, applications }: KanbanColumnProps) {
+    const [processing, setProcessing] = useState<Map<number, boolean>>(new Map());
+
+    const handleStatusChange = (applicationId: number, newStatus: string) => {
+        setProcessing((prev) => new Map(prev).set(applicationId, true));
+        router.patch(`/applications/${applicationId}/status`, { status: newStatus }, {
+            onFinish: () => {
+                setProcessing((prev) => {
+                    const next = new Map(prev);
+                    next.delete(applicationId);
+                    return next;
+                });
+            },
+        });
+    };
     return (
         <section className="flex w-full flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm">
             <header className="flex items-center justify-between">
@@ -44,6 +61,25 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                                     <span className="font-medium">
                                         {createdAtLabel}
                                     </span>
+                                </div>
+                                <div className="mt-2">
+                                    <select
+                                        value={application.status}
+                                        onChange={(e) =>
+                                            handleStatusChange(
+                                                application.id,
+                                                e.target.value,
+                                            )
+                                        }
+                                        disabled={processing.get(application.id) ?? false}
+                                        className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+                                    >
+                                        {KANBAN_STATUSES.map((status) => (
+                                            <option key={status} value={status}>
+                                                {status}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </article>
                         );

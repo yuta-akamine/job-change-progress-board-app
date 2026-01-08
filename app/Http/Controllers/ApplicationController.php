@@ -69,7 +69,7 @@ class ApplicationController extends Controller
     /**
      * Update the status of the specified resource.
      */
-    public function updateStatus(Request $request, Application $application): JsonResponse
+    public function updateStatus(Request $request, Application $application): RedirectResponse|JsonResponse
     {
         $this->authorize('updateStatus', $application);
 
@@ -80,6 +80,10 @@ class ApplicationController extends Controller
         $application->update([
             'status' => $request->input('status'),
         ]);
+
+        if ($request->header('X-Inertia')) {
+            return Redirect::back();
+        }
 
         return response()->json(['success' => true]);
     }
