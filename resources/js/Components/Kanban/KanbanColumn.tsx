@@ -23,6 +23,23 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
             },
         });
     };
+
+    const handleDelete = (applicationId: number) => {
+        if (!confirm('この応募情報を削除しますか？')) {
+            return;
+        }
+
+        setProcessing((prev) => new Map(prev).set(applicationId, true));
+        router.delete(`/applications/${applicationId}`, {
+            onFinish: () => {
+                setProcessing((prev) => {
+                    const next = new Map(prev);
+                    next.delete(applicationId);
+                    return next;
+                });
+            },
+        });
+    };
     return (
         <section className="flex w-full flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm">
             <header className="flex items-center justify-between">
@@ -80,6 +97,15 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                                             </option>
                                         ))}
                                     </select>
+                                </div>
+                                <div className="mt-2 flex justify-end">
+                                    <button
+                                        onClick={() => handleDelete(application.id)}
+                                        disabled={processing.get(application.id) ?? false}
+                                        className="rounded border border-red-300 bg-white px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
+                                    >
+                                        削除
+                                    </button>
                                 </div>
                             </article>
                         );
