@@ -10,10 +10,22 @@ interface KanbanColumnProps {
 
 export default function KanbanColumn({ title, applications }: KanbanColumnProps) {
     const [processing, setProcessing] = useState<Map<number, boolean>>(new Map());
+    const [optimisticRemoved, setOptimisticRemoved] = useState<Set<number>>(new Set());
 
     const handleStatusChange = (applicationId: number, newStatus: string) => {
+        const application = applications.find((app) => app.id === applicationId);
+        if (!application || newStatus === application.status) return;
+
+        setOptimisticRemoved((prev) => new Set(prev).add(applicationId));
         setProcessing((prev) => new Map(prev).set(applicationId, true));
         router.patch(`/applications/${applicationId}/status`, { status: newStatus }, {
+            onError: () => {
+                setOptimisticRemoved((prev) => {
+                    const next = new Set(prev);
+                    next.delete(applicationId);
+                    return next;
+                });
+            },
             onFinish: () => {
                 setProcessing((prev) => {
                     const next = new Map(prev);
@@ -56,6 +68,8 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                     <p className="text-xs text-gray-400">No applications</p>
                 ) : (
                     applications.map((application) => {
+                        if (optimisticRemoved.has(application.id)) return null;
+
                         const createdAtLabel = application.created_at
                             ? new Date(application.created_at).toLocaleDateString()
                             : '—';
