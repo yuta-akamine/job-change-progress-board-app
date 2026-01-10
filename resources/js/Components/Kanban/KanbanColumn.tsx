@@ -18,30 +18,37 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
 
         setOptimisticRemoved((prev) => new Set(prev).add(applicationId));
         setProcessing((prev) => new Map(prev).set(applicationId, true));
-        router.patch(`/applications/${applicationId}/status`, { status: newStatus }, {
-            onError: () => {
-                // TODO: toast lib not found - if toast library is added, show error notification here
-                setOptimisticRemoved((prev) => {
-                    const next = new Set(prev);
-                    next.delete(applicationId);
-                    return next;
-                });
+        const visit = router.patch(
+            `/applications/${applicationId}/status`,
+            { status: newStatus },
+            {
+                onError: () => {
+                    // TODO: toast lib not found - if toast library is added, show error notification here
+                    setOptimisticRemoved((prev) => {
+                        const next = new Set(prev);
+                        next.delete(applicationId);
+                        return next;
+                    });
+                },
+                onFinish: () => {
+                    setProcessing((prev) => {
+                        const next = new Map(prev);
+                        next.delete(applicationId);
+                        return next;
+                    });
+                    setOptimisticRemoved((prev) => {
+                        const next = new Set(prev);
+                        next.delete(applicationId);
+                        return next;
+                    });
+                },
             },
-            onFinish: () => {
-                setProcessing((prev) => {
-                    const next = new Map(prev);
-                    next.delete(applicationId);
-                    return next;
-                });
-                setOptimisticRemoved((prev) => {
-                    const next = new Set(prev);
-                    next.delete(applicationId);
-                    return next;
-                });
-            },
-        }).catch((e) => {
-            console.debug('Inertia patch error (ignored):', e);
-        });
+        ) as any;
+        if (visit && typeof visit.catch === 'function') {
+            visit.catch((e: any) => {
+                console.debug('Inertia patch error (ignored):', e);
+            });
+        }
     };
 
     const handleDelete = (applicationId: number) => {
@@ -51,17 +58,23 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
 
         // TODO: 楽観的削除を実装する場合は、onFinish で optimisticRemoved をクリアする処理を追加すること
         setProcessing((prev) => new Map(prev).set(applicationId, true));
-        router.delete(`/applications/${applicationId}`, {
-            onFinish: () => {
-                setProcessing((prev) => {
-                    const next = new Map(prev);
-                    next.delete(applicationId);
-                    return next;
-                });
+        const visit = router.delete(
+            `/applications/${applicationId}`,
+            {
+                onFinish: () => {
+                    setProcessing((prev) => {
+                        const next = new Map(prev);
+                        next.delete(applicationId);
+                        return next;
+                    });
+                },
             },
-        }).catch((e) => {
-            console.debug('Inertia delete error (ignored):', e);
-        });
+        ) as any;
+        if (visit && typeof visit.catch === 'function') {
+            visit.catch((e: any) => {
+                console.debug('Inertia delete error (ignored):', e);
+            });
+        }
     };
     return (
         <section className="flex w-full flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm">
