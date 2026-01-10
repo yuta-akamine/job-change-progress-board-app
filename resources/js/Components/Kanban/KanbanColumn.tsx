@@ -20,6 +20,7 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
         setProcessing((prev) => new Map(prev).set(applicationId, true));
         router.patch(`/applications/${applicationId}/status`, { status: newStatus }, {
             onError: () => {
+                // TODO: toast lib not found - if toast library is added, show error notification here
                 setOptimisticRemoved((prev) => {
                     const next = new Set(prev);
                     next.delete(applicationId);
@@ -32,7 +33,14 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                     next.delete(applicationId);
                     return next;
                 });
+                setOptimisticRemoved((prev) => {
+                    const next = new Set(prev);
+                    next.delete(applicationId);
+                    return next;
+                });
             },
+        }).catch((e) => {
+            console.debug('Inertia patch error (ignored):', e);
         });
     };
 
@@ -41,6 +49,7 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
             return;
         }
 
+        // TODO: 楽観的削除を実装する場合は、onFinish で optimisticRemoved をクリアする処理を追加すること
         setProcessing((prev) => new Map(prev).set(applicationId, true));
         router.delete(`/applications/${applicationId}`, {
             onFinish: () => {
@@ -50,6 +59,8 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                     return next;
                 });
             },
+        }).catch((e) => {
+            console.debug('Inertia delete error (ignored):', e);
         });
     };
     return (
