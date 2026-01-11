@@ -47,18 +47,52 @@ export default function Dashboard({ applications }: Props) {
         const application = localApps.find((app) => app.id === applicationId);
         if (!application || application.status === newStatus) return;
 
-        const prevApps = localApps;
+        const prevApps = localApps.map((app) => ({ ...app }));
         setLocalApps((prev) =>
             prev.map((app) =>
                 app.id === applicationId ? { ...app, status: newStatus } : app,
             ),
         );
 
-        router.patch(`/applications/${applicationId}/status`, { status: newStatus }, {
-            onError: () => {
+        let hasSucceeded = false;
+
+        const rollback = () => {
+            if (!hasSucceeded) {
                 setLocalApps(prevApps);
-            },
-        });
+                console.error('Failed to update application status: network or server error');
+                alert('ステータスの更新に失敗しました。ネットワークエラーまたはサーバーエラーの可能性があります。');
+            }
+        };
+
+        try {
+            const visit = router.patch(
+                `/applications/${applicationId}/status`,
+                { status: newStatus },
+                {
+                    onSuccess: () => {
+                        hasSucceeded = true;
+                    },
+                    onError: (errors) => {
+                        rollback();
+                        console.error('Failed to update application status:', errors);
+                    },
+                    onFinish: () => {
+                        if (!hasSucceeded) {
+                            rollback();
+                        }
+                    },
+                },
+            ) as any;
+            if (visit && typeof visit.catch === 'function') {
+                visit.catch((e: any) => {
+                    rollback();
+                    console.error('Failed to update application status:', e);
+                });
+            }
+        } catch (e) {
+            rollback();
+            console.error('Failed to update application status:', e);
+        }
     };
 
     // applications を status ごとに groupBy（未知ステータスは 'その他' に集約）
