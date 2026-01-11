@@ -28,6 +28,7 @@ interface Props {
 
 export default function Dashboard({ applications }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingApplication, setEditingApplication] = useState<Application | null>(null);
     const [localApps, setLocalApps] = useState<Application[]>(applications);
 
     useEffect(() => {
@@ -149,6 +150,7 @@ export default function Dashboard({ applications }: Props) {
                                             key={status}
                                             title={status}
                                             applications={groupedByStatus[status] || []}
+                                            onEdit={(app) => setEditingApplication(app)}
                                         />
                                     ))}
                                 </div>
@@ -250,6 +252,21 @@ export default function Dashboard({ applications }: Props) {
             <CreateApplicationModal
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+            />
+            <CreateApplicationModal
+                open={!!editingApplication}
+                onClose={() => setEditingApplication(null)}
+                application={editingApplication}
+                onSuccess={() => {
+                    if (editingApplication) {
+                        router.reload({
+                            only: ['applications'],
+                            onSuccess: (page) => {
+                                setLocalApps((page.props as Props).applications);
+                            },
+                        });
+                    }
+                }}
             />
         </AuthenticatedLayout>
     );

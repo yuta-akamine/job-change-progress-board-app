@@ -7,9 +7,10 @@ import { KANBAN_STATUSES } from '@/constants/statuses';
 interface KanbanColumnProps {
     title: string;
     applications: Application[];
+    onEdit?: (application: Application) => void;
 }
 
-export default function KanbanColumn({ title, applications }: KanbanColumnProps) {
+export default function KanbanColumn({ title, applications, onEdit }: KanbanColumnProps) {
     const [processing, setProcessing] = useState<Map<number, boolean>>(new Map());
     const [optimisticRemoved, setOptimisticRemoved] = useState<Set<number>>(new Set());
     const { setNodeRef: setDroppableRef } = useDroppable({ id: title });
@@ -104,6 +105,7 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                                 optimisticRemoved={optimisticRemoved}
                                 handleStatusChange={handleStatusChange}
                                 handleDelete={handleDelete}
+                                onEdit={onEdit}
                             />
                         );
                     })
@@ -119,12 +121,14 @@ function DraggableCard({
     optimisticRemoved,
     handleStatusChange,
     handleDelete,
+    onEdit,
 }: {
     application: Application;
     processing: Map<number, boolean>;
     optimisticRemoved: Set<number>;
     handleStatusChange: (applicationId: number, newStatus: string) => void;
     handleDelete: (applicationId: number) => void;
+    onEdit?: (application: Application) => void;
 }) {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
         id: `app-${application.id}`,
@@ -144,53 +148,63 @@ function DraggableCard({
         <article
             ref={setNodeRef}
             style={style}
-            {...listeners}
-            {...attributes}
-            className="rounded-lg border border-gray-200 bg-gray-50 p-3 cursor-move"
+            className="rounded-lg border border-gray-200 bg-gray-50 p-3"
         >
-                                <div className="text-sm font-semibold text-gray-800">
-                                    {application.company_name}
-                                </div>
-                                {application.role && (
-                                    <div className="mt-0.5 text-xs text-gray-600">
-                                        {application.role}
-                                    </div>
-                                )}
-                                <div className="mt-1 text-[11px] text-gray-500">
-                                    Created:{' '}
-                                    <span className="font-medium">
-                                        {createdAtLabel}
-                                    </span>
-                                </div>
-                                <div className="mt-2">
-                                    <select
-                                        value={application.status}
-                                        onChange={(e) =>
-                                            handleStatusChange(
-                                                application.id,
-                                                e.target.value,
-                                            )
-                                        }
-                                        disabled={processing.get(application.id) ?? false}
-                                        className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
-                                    >
-                                        {KANBAN_STATUSES.map((status) => (
-                                            <option key={status} value={status}>
-                                                {status}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="mt-2 flex justify-end">
-                                    <button
-                                        onClick={() => handleDelete(application.id)}
-                                        disabled={processing.get(application.id) ?? false}
-                                        className="rounded border border-red-300 bg-white px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
-                                    >
-                                        削除
-                                    </button>
-                                </div>
-                            </article>
+            <div
+                {...listeners}
+                {...attributes}
+                className="text-sm font-semibold text-gray-800 cursor-move"
+            >
+                {application.company_name}
+            </div>
+            {application.role && (
+                <div className="mt-0.5 text-xs text-gray-600">
+                    {application.role}
+                </div>
+            )}
+            <div className="mt-1 text-[11px] text-gray-500">
+                Created:{' '}
+                <span className="font-medium">
+                    {createdAtLabel}
+                </span>
+            </div>
+            <div className="mt-2">
+                <select
+                    value={application.status}
+                    onChange={(e) =>
+                        handleStatusChange(
+                            application.id,
+                            e.target.value,
+                        )
+                    }
+                    disabled={processing.get(application.id) ?? false}
+                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
+                >
+                    {KANBAN_STATUSES.map((status) => (
+                        <option key={status} value={status}>
+                            {status}
+                        </option>
+                    ))}
+                </select>
+            </div>
+            <div className="mt-2 flex justify-end gap-2">
+                {onEdit && (
+                    <button
+                        onClick={() => onEdit(application)}
+                        disabled={processing.get(application.id) ?? false}
+                        className="rounded border border-blue-300 bg-white px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 disabled:opacity-50"
+                    >
+                        編集
+                    </button>
+                )}
+                <button
+                    onClick={() => handleDelete(application.id)}
+                    disabled={processing.get(application.id) ?? false}
+                    className="rounded border border-red-300 bg-white px-2 py-1 text-xs text-red-600 hover:bg-red-50 disabled:opacity-50"
+                >
+                    削除
+                </button>
+            </div>
+        </article>
     );
 }
-
