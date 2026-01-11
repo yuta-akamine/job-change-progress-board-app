@@ -154,97 +154,31 @@ export default function Dashboard({ applications }: Props) {
                                         />
                                     ))}
                                 </div>
-                            </DndContext>
 
-                            {/* その他（未知ステータス） */}
-                            {groupedByStatus['その他'] &&
-                                groupedByStatus['その他'].length > 0 && (
-                                    <div className="space-y-6 mb-8">
-                                        <div className="border-b border-gray-200 pb-6">
-                                            <h4 className="text-md font-semibold mb-3">
-                                                その他 (
-                                                {groupedByStatus['その他']
-                                                    .length}
-                                                )
-                                            </h4>
-                                            <div className="space-y-2">
-                                                {groupedByStatus['その他'].map(
-                                                    (application) => (
-                                                        <div
-                                                            key={application.id}
-                                                            className="border border-gray-200 rounded p-4"
-                                                        >
-                                                            <div className="font-semibold">
-                                                                {
-                                                                    application.company_name
-                                                                }
-                                                            </div>
-                                                            {application.role && (
-                                                                <div className="text-sm text-gray-600">
-                                                                    Role:{' '}
-                                                                    {
-                                                                        application.role
-                                                                    }
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ),
-                                                )}
-                                            </div>
+                                {/* その他（未知ステータス） */}
+                                {groupedByStatus['その他'] &&
+                                    groupedByStatus['その他'].length > 0 && (
+                                        <div className="space-y-6 mb-8">
+                                            <KanbanColumn
+                                                title="その他"
+                                                applications={groupedByStatus['その他']}
+                                                onEdit={(app) => setEditingApplication(app)}
+                                            />
                                         </div>
-                                    </div>
-                                )}
+                                    )}
 
-                            {/* ARCHIVED ステータス群（別セクション） */}
-                            <div className="space-y-6 border-t border-gray-300 pt-6">
-                                {ARCHIVED_STATUSES.map((status) => {
-                                    const statusApplications =
-                                        groupedByStatus[status] || [];
-                                    return (
-                                        <div
+                                {/* ARCHIVED ステータス群 */}
+                                <div className="space-y-6 border-t border-gray-300 pt-6">
+                                    {ARCHIVED_STATUSES.map((status) => (
+                                        <KanbanColumn
                                             key={status}
-                                            className="border-b border-gray-200 pb-6 last:border-b-0"
-                                        >
-                                            <h4 className="text-md font-semibold mb-3">
-                                                {status} ({statusApplications.length})
-                                            </h4>
-                                            {statusApplications.length === 0 ? (
-                                                <p className="text-sm text-gray-500">
-                                                    No applications in this
-                                                    status.
-                                                </p>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {statusApplications.map(
-                                                        (application) => (
-                                                            <div
-                                                                key={
-                                                                    application.id
-                                                                }
-                                                                className="border border-gray-200 rounded p-4"
-                                                            >
-                                                                <div className="font-semibold">
-                                                                    {
-                                                                        application.company_name
-                                                                    }
-                                                                </div>
-                                                                {application.role && (
-                                                                    <div className="text-sm text-gray-600">
-                                                                        Role:{' '}
-                                                                        {
-                                                                            application.role
-                                                                        }
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                            title={status}
+                                            applications={groupedByStatus[status] || []}
+                                            onEdit={(app) => setEditingApplication(app)}
+                                        />
+                                    ))}
+                                </div>
+                            </DndContext>
                         </div>
                     </div>
                 </div>
