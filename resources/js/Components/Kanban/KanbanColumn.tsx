@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import { useDroppable, useDraggable } from '@dnd-kit/core';
 import type { Application } from '@/types';
-import { KANBAN_STATUSES } from '@/constants/statuses';
 
 interface KanbanColumnProps {
     title: string;
@@ -12,47 +11,7 @@ interface KanbanColumnProps {
 
 export default function KanbanColumn({ title, applications, onEdit }: KanbanColumnProps) {
     const [processing, setProcessing] = useState<Map<number, boolean>>(new Map());
-    const [optimisticRemoved, setOptimisticRemoved] = useState<Set<number>>(new Set());
     const { setNodeRef: setDroppableRef } = useDroppable({ id: title });
-
-    const handleStatusChange = (applicationId: number, newStatus: string) => {
-        const application = applications.find((app) => app.id === applicationId);
-        if (!application || newStatus === application.status) return;
-
-        setOptimisticRemoved((prev) => new Set(prev).add(applicationId));
-        setProcessing((prev) => new Map(prev).set(applicationId, true));
-        const visit = router.patch(
-            `/applications/${applicationId}/status`,
-            { status: newStatus },
-            {
-                onError: () => {
-                    // TODO: toast lib not found - if toast library is added, show error notification here
-                    setOptimisticRemoved((prev) => {
-                        const next = new Set(prev);
-                        next.delete(applicationId);
-                        return next;
-                    });
-                },
-                onFinish: () => {
-                    setProcessing((prev) => {
-                        const next = new Map(prev);
-                        next.delete(applicationId);
-                        return next;
-                    });
-                    setOptimisticRemoved((prev) => {
-                        const next = new Set(prev);
-                        next.delete(applicationId);
-                        return next;
-                    });
-                },
-            },
-        ) as any;
-        if (visit && typeof visit.catch === 'function') {
-            visit.catch((e: any) => {
-                console.debug('Inertia patch error (ignored):', e);
-            });
-        }
-    };
 
     const handleDelete = (applicationId: number) => {
         if (!confirm('この応募情報を削除しますか？')) {
@@ -94,21 +53,15 @@ export default function KanbanColumn({ title, applications, onEdit }: KanbanColu
                 {applications.length === 0 ? (
                     <p className="text-xs text-gray-400">No applications</p>
                 ) : (
-                    applications.map((application) => {
-                        if (optimisticRemoved.has(application.id)) return null;
-
-                        return (
-                            <DraggableCard
-                                key={application.id}
-                                application={application}
-                                processing={processing}
-                                optimisticRemoved={optimisticRemoved}
-                                handleStatusChange={handleStatusChange}
-                                handleDelete={handleDelete}
-                                onEdit={onEdit}
-                            />
-                        );
-                    })
+                    applications.map((application) => (
+                        <DraggableCard
+                            key={application.id}
+                            application={application}
+                            processing={processing}
+                            handleDelete={handleDelete}
+                            onEdit={onEdit}
+                        />
+                    ))
                 )}
             </div>
         </section>
@@ -118,15 +71,11 @@ export default function KanbanColumn({ title, applications, onEdit }: KanbanColu
 function DraggableCard({
     application,
     processing,
-    optimisticRemoved,
-    handleStatusChange,
     handleDelete,
     onEdit,
 }: {
     application: Application;
     processing: Map<number, boolean>;
-    optimisticRemoved: Set<number>;
-    handleStatusChange: (applicationId: number, newStatus: string) => void;
     handleDelete: (applicationId: number) => void;
     onEdit?: (application: Application) => void;
 }) {
@@ -167,25 +116,6 @@ function DraggableCard({
                 <span className="font-medium">
                     {createdAtLabel}
                 </span>
-            </div>
-            <div className="mt-2">
-                <select
-                    value={application.status}
-                    onChange={(e) =>
-                        handleStatusChange(
-                            application.id,
-                            e.target.value,
-                        )
-                    }
-                    disabled={processing.get(application.id) ?? false}
-                    className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-xs"
-                >
-                    {KANBAN_STATUSES.map((status) => (
-                        <option key={status} value={status}>
-                            {status}
-                        </option>
-                    ))}
-                </select>
             </div>
             <div className="mt-2 flex justify-end gap-2">
                 {onEdit && (
