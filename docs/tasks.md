@@ -20,10 +20,10 @@
 
 ## フロント
 - [x] inertia_page: ダッシュボードページ (Inertia) を作成 + applications を取得して渡す
-- [ ] kanban_ui: Reactでカンバン表示（列固定）を作成（cards を status 毎にレンダリング）
-- [ ] create_modal: Createフォーム（Inertia form）を作成（FormRequest のフィールドと一致）
-- [ ] drag: dnd-kit（or react-beautiful-dnd）でドラッグ実装 + PATCH /applications/{id}/status を呼ぶ（optimistic update）
-- [ ] dev: `./vendor/bin/sail npm run dev` で HMR を確認
+- [x] kanban_ui: Reactでカンバン表示（列固定）を作成（cards を status 毎にレンダリング）
+- [x] create_modal: Createフォーム（Inertia form）を作成（FormRequest のフィールドと一致）
+- [x] drag: dnd-kit（or react-beautiful-dnd）でドラッグ実装 + PATCH /applications/{id}/status を呼ぶ（optimistic update）
+- [x] dev: `./vendor/bin/sail npm run dev` で HMR を確認
 
 ## レスポンシブ・スタイル
 - [ ] tailwind: 最低限の見栄え調整（カード・列・モーダルのレスポンシブ確認）
