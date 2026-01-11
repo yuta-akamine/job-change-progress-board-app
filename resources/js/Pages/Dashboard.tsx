@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import KanbanColumn from '@/Components/Kanban/KanbanColumn';
 import CreateApplicationModal from '@/Components/Kanban/CreateApplicationModal';
 import {
@@ -27,9 +28,41 @@ interface Props {
 
 export default function Dashboard({ applications }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [localApps, setLocalApps] = useState<Application[]>(applications);
+
+    useEffect(() => {
+        setLocalApps(applications);
+    }, [applications]);
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over) return;
+
+        const applicationId = parseInt(
+            (active.id as string).replace('app-', ''),
+            10,
+        );
+        const newStatus = over.id as string;
+
+        const application = localApps.find((app) => app.id === applicationId);
+        if (!application || application.status === newStatus) return;
+
+        const prevApps = localApps;
+        setLocalApps((prev) =>
+            prev.map((app) =>
+                app.id === applicationId ? { ...app, status: newStatus } : app,
+            ),
+        );
+
+        router.patch(`/applications/${applicationId}/status`, { status: newStatus }, {
+            onError: () => {
+                setLocalApps(prevApps);
+            },
+        });
+    };
 
     // applications を status ごとに groupBy（未知ステータスは 'その他' に集約）
-    const groupedByStatus = applications.reduce(
+    const groupedByStatus = localApps.reduce(
         (acc, application) => {
             const status = application.status;
             const normalizedStatus: Status =
@@ -64,7 +97,7 @@ export default function Dashboard({ applications }: Props) {
                         <div className="p-6 text-gray-900">
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold">
-                                    Applications ({applications.length})
+                                    Applications ({localApps.length})
                                 </h3>
                                 <button
                                     onClick={() => setIsModalOpen(true)}
@@ -74,16 +107,18 @@ export default function Dashboard({ applications }: Props) {
                                 </button>
                             </div>
 
-                            {/* KANBAN ステータス群 */}
-                            <div className="space-y-6 mb-8">
-                                {KANBAN_STATUSES.map((status) => (
-                                    <KanbanColumn
-                                        key={status}
-                                        title={status}
-                                        applications={groupedByStatus[status] || []}
-                                    />
-                                ))}
-                            </div>
+                            <DndContext onDragEnd={handleDragEnd}>
+                                {/* KANBAN ステータス群 */}
+                                <div className="space-y-6 mb-8">
+                                    {KANBAN_STATUSES.map((status) => (
+                                        <KanbanColumn
+                                            key={status}
+                                            title={status}
+                                            applications={groupedByStatus[status] || []}
+                                        />
+                                    ))}
+                                </div>
+                            </DndContext>
 
                             {/* その他（未知ステータス） */}
                             {groupedByStatus['その他'] &&

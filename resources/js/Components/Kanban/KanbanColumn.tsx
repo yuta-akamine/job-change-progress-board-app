@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router } from '@inertiajs/react';
+import { useDroppable, useDraggable } from '@dnd-kit/core';
 import type { Application } from '@/types';
 import { KANBAN_STATUSES } from '@/constants/statuses';
 
@@ -11,6 +12,7 @@ interface KanbanColumnProps {
 export default function KanbanColumn({ title, applications }: KanbanColumnProps) {
     const [processing, setProcessing] = useState<Map<number, boolean>>(new Map());
     const [optimisticRemoved, setOptimisticRemoved] = useState<Set<number>>(new Set());
+    const { setNodeRef: setDroppableRef } = useDroppable({ id: title });
 
     const handleStatusChange = (applicationId: number, newStatus: string) => {
         const application = applications.find((app) => app.id === applicationId);
@@ -87,22 +89,65 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                 </span>
             </header>
 
-            <div className="mt-2 space-y-2">
+            <div ref={setDroppableRef} className="mt-2 space-y-2">
                 {applications.length === 0 ? (
                     <p className="text-xs text-gray-400">No applications</p>
                 ) : (
                     applications.map((application) => {
                         if (optimisticRemoved.has(application.id)) return null;
 
-                        const createdAtLabel = application.created_at
-                            ? new Date(application.created_at).toLocaleDateString()
-                            : '—';
-
                         return (
-                            <article
+                            <DraggableCard
                                 key={application.id}
-                                className="rounded-lg border border-gray-200 bg-gray-50 p-3"
-                            >
+                                application={application}
+                                processing={processing}
+                                optimisticRemoved={optimisticRemoved}
+                                handleStatusChange={handleStatusChange}
+                                handleDelete={handleDelete}
+                            />
+                        );
+                    })
+                )}
+            </div>
+        </section>
+    );
+}
+
+function DraggableCard({
+    application,
+    processing,
+    optimisticRemoved,
+    handleStatusChange,
+    handleDelete,
+}: {
+    application: Application;
+    processing: Map<number, boolean>;
+    optimisticRemoved: Set<number>;
+    handleStatusChange: (applicationId: number, newStatus: string) => void;
+    handleDelete: (applicationId: number) => void;
+}) {
+    const { attributes, listeners, setNodeRef, transform } = useDraggable({
+        id: `app-${application.id}`,
+    });
+
+    const style = transform
+        ? {
+              transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+          }
+        : undefined;
+
+    const createdAtLabel = application.created_at
+        ? new Date(application.created_at).toLocaleDateString()
+        : '—';
+
+    return (
+        <article
+            ref={setNodeRef}
+            style={style}
+            {...listeners}
+            {...attributes}
+            className="rounded-lg border border-gray-200 bg-gray-50 p-3 cursor-move"
+        >
                                 <div className="text-sm font-semibold text-gray-800">
                                     {application.company_name}
                                 </div>
@@ -146,11 +191,6 @@ export default function KanbanColumn({ title, applications }: KanbanColumnProps)
                                     </button>
                                 </div>
                             </article>
-                        );
-                    })
-                )}
-            </div>
-        </section>
     );
 }
 
