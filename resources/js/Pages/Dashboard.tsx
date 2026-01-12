@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import KanbanColumn from '@/Components/Kanban/KanbanColumn';
 import CreateApplicationModal from '@/Components/Kanban/CreateApplicationModal';
 import {
@@ -27,9 +28,76 @@ interface Props {
 
 export default function Dashboard({ applications }: Props) {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingApplication, setEditingApplication] = useState<Application | null>(null);
+    const [localApps, setLocalApps] = useState<Application[]>(applications);
+
+    useEffect(() => {
+        setLocalApps(applications);
+    }, [applications]);
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over) return;
+
+        const applicationId = parseInt(
+            (active.id as string).replace('app-', ''),
+            10,
+        );
+        const newStatus = over.id as string;
+
+        const application = localApps.find((app) => app.id === applicationId);
+        if (!application || application.status === newStatus) return;
+
+        const prevApps = localApps.map((app) => ({ ...app }));
+        setLocalApps((prev) =>
+            prev.map((app) =>
+                app.id === applicationId ? { ...app, status: newStatus } : app,
+            ),
+        );
+
+        let hasSucceeded = false;
+
+        const rollback = () => {
+            if (!hasSucceeded) {
+                setLocalApps(prevApps);
+                console.error('Failed to update application status: network or server error');
+                alert('ステータスの更新に失敗しました。ネットワークエラーまたはサーバーエラーの可能性があります。');
+            }
+        };
+
+        try {
+            const visit = router.patch(
+                `/applications/${applicationId}/status`,
+                { status: newStatus },
+                {
+                    onSuccess: () => {
+                        hasSucceeded = true;
+                    },
+                    onError: (errors) => {
+                        rollback();
+                        console.error('Failed to update application status:', errors);
+                    },
+                    onFinish: () => {
+                        if (!hasSucceeded) {
+                            rollback();
+                        }
+                    },
+                },
+            ) as any;
+            if (visit && typeof visit.catch === 'function') {
+                visit.catch((e: any) => {
+                    rollback();
+                    console.error('Failed to update application status:', e);
+                });
+            }
+        } catch (e) {
+            rollback();
+            console.error('Failed to update application status:', e);
+        }
+    };
 
     // applications を status ごとに groupBy（未知ステータスは 'その他' に集約）
-    const groupedByStatus = applications.reduce(
+    const groupedByStatus = localApps.reduce(
         (acc, application) => {
             const status = application.status;
             const normalizedStatus: Status =
@@ -64,7 +132,7 @@ export default function Dashboard({ applications }: Props) {
                         <div className="p-6 text-gray-900">
                             <div className="mb-6 flex items-center justify-between">
                                 <h3 className="text-lg font-semibold">
-                                    Applications ({applications.length})
+                                    Applications ({localApps.length})
                                 </h3>
                                 <button
                                     onClick={() => setIsModalOpen(true)}
@@ -74,106 +142,43 @@ export default function Dashboard({ applications }: Props) {
                                 </button>
                             </div>
 
-                            {/* KANBAN ステータス群 */}
-                            <div className="space-y-6 mb-8">
-                                {KANBAN_STATUSES.map((status) => (
-                                    <KanbanColumn
-                                        key={status}
-                                        title={status}
-                                        applications={groupedByStatus[status] || []}
-                                    />
-                                ))}
-                            </div>
-
-                            {/* その他（未知ステータス） */}
-                            {groupedByStatus['その他'] &&
-                                groupedByStatus['その他'].length > 0 && (
-                                    <div className="space-y-6 mb-8">
-                                        <div className="border-b border-gray-200 pb-6">
-                                            <h4 className="text-md font-semibold mb-3">
-                                                その他 (
-                                                {groupedByStatus['その他']
-                                                    .length}
-                                                )
-                                            </h4>
-                                            <div className="space-y-2">
-                                                {groupedByStatus['その他'].map(
-                                                    (application) => (
-                                                        <div
-                                                            key={application.id}
-                                                            className="border border-gray-200 rounded p-4"
-                                                        >
-                                                            <div className="font-semibold">
-                                                                {
-                                                                    application.company_name
-                                                                }
-                                                            </div>
-                                                            {application.role && (
-                                                                <div className="text-sm text-gray-600">
-                                                                    Role:{' '}
-                                                                    {
-                                                                        application.role
-                                                                    }
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    ),
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                            {/* ARCHIVED ステータス群（別セクション） */}
-                            <div className="space-y-6 border-t border-gray-300 pt-6">
-                                {ARCHIVED_STATUSES.map((status) => {
-                                    const statusApplications =
-                                        groupedByStatus[status] || [];
-                                    return (
-                                        <div
+                            <DndContext onDragEnd={handleDragEnd}>
+                                {/* KANBAN ステータス群 */}
+                                <div className="space-y-6 mb-8">
+                                    {KANBAN_STATUSES.map((status) => (
+                                        <KanbanColumn
                                             key={status}
-                                            className="border-b border-gray-200 pb-6 last:border-b-0"
-                                        >
-                                            <h4 className="text-md font-semibold mb-3">
-                                                {status} ({statusApplications.length})
-                                            </h4>
-                                            {statusApplications.length === 0 ? (
-                                                <p className="text-sm text-gray-500">
-                                                    No applications in this
-                                                    status.
-                                                </p>
-                                            ) : (
-                                                <div className="space-y-2">
-                                                    {statusApplications.map(
-                                                        (application) => (
-                                                            <div
-                                                                key={
-                                                                    application.id
-                                                                }
-                                                                className="border border-gray-200 rounded p-4"
-                                                            >
-                                                                <div className="font-semibold">
-                                                                    {
-                                                                        application.company_name
-                                                                    }
-                                                                </div>
-                                                                {application.role && (
-                                                                    <div className="text-sm text-gray-600">
-                                                                        Role:{' '}
-                                                                        {
-                                                                            application.role
-                                                                        }
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ),
-                                                    )}
-                                                </div>
-                                            )}
+                                            title={status}
+                                            applications={groupedByStatus[status] || []}
+                                            onEdit={(app) => setEditingApplication(app)}
+                                        />
+                                    ))}
+                                </div>
+
+                                {/* その他（未知ステータス） */}
+                                {groupedByStatus['その他'] &&
+                                    groupedByStatus['その他'].length > 0 && (
+                                        <div className="space-y-6 mb-8">
+                                            <KanbanColumn
+                                                title="その他"
+                                                applications={groupedByStatus['その他']}
+                                                onEdit={(app) => setEditingApplication(app)}
+                                            />
                                         </div>
-                                    );
-                                })}
-                            </div>
+                                    )}
+
+                                {/* ARCHIVED ステータス群 */}
+                                <div className="space-y-6 border-t border-gray-300 pt-6">
+                                    {ARCHIVED_STATUSES.map((status) => (
+                                        <KanbanColumn
+                                            key={status}
+                                            title={status}
+                                            applications={groupedByStatus[status] || []}
+                                            onEdit={(app) => setEditingApplication(app)}
+                                        />
+                                    ))}
+                                </div>
+                            </DndContext>
                         </div>
                     </div>
                 </div>
@@ -181,6 +186,21 @@ export default function Dashboard({ applications }: Props) {
             <CreateApplicationModal
                 open={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
+            />
+            <CreateApplicationModal
+                open={!!editingApplication}
+                onClose={() => setEditingApplication(null)}
+                application={editingApplication}
+                onSuccess={() => {
+                    if (editingApplication) {
+                        router.reload({
+                            only: ['applications'],
+                            onSuccess: (page) => {
+                                setLocalApps((page.props as Props).applications);
+                            },
+                        });
+                    }
+                }}
             />
         </AuthenticatedLayout>
     );

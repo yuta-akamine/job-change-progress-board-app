@@ -1,35 +1,85 @@
 import { useForm } from '@inertiajs/react';
-import { KANBAN_STATUSES } from '@/constants/statuses';
+import { useEffect } from 'react';
+import type { FormEvent } from 'react';
+import { KANBAN_STATUSES, ARCHIVED_STATUSES } from '@/constants/statuses';
+
+interface Application {
+    id: number;
+    company_name: string;
+    role: string | null;
+    status: string;
+    interview_at: string | null;
+    notes: string | null;
+}
 
 interface CreateApplicationModalProps {
     open: boolean;
     onClose: () => void;
+    application?: Application | null;
+    onSuccess?: () => void;
 }
 
 export default function CreateApplicationModal({
     open,
     onClose,
+    application,
+    onSuccess,
 }: CreateApplicationModalProps) {
+    const isEditMode = !!application;
     const form = useForm({
-        company_name: '',
-        role: '',
-        status: KANBAN_STATUSES[0],
-        interview_at: '',
-        notes: '',
+        company_name: application?.company_name || '',
+        role: application?.role || '',
+        status: application?.status || KANBAN_STATUSES[0],
+        interview_at: application?.interview_at
+            ? new Date(application.interview_at).toISOString().slice(0, 16)
+            : '',
+        notes: application?.notes || '',
     });
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        // normalize empty interview_at to null
-        if (!form.data.interview_at) {
-            form.setData('interview_at', null as any);
+    useEffect(() => {
+        if (application) {
+            form.setData({
+                company_name: application.company_name,
+                role: application.role || '',
+                status: application.status,
+                interview_at: application.interview_at
+                    ? new Date(application.interview_at).toISOString().slice(0, 16)
+                    : '',
+                notes: application.notes || '',
+            });
         }
-        form.post('/applications', {
-            onSuccess: () => {
-                form.reset();
-                onClose();
-            },
-        });
+    }, [application]);
+
+    const handleSubmit = (e: FormEvent) => {
+        e.preventDefault();
+        // normalize empty interview_at to null in payload only
+        const payload = {
+            ...form.data,
+            interview_at: form.data.interview_at || null,
+        };
+        if (isEditMode && application) {
+            form.patch(`/applications/${application.id}`, {
+                data: payload,
+                onSuccess: () => {
+                    form.reset();
+                    onClose();
+                    if (onSuccess) onSuccess();
+                },
+                onError: (errors) => {
+                    console.error('Failed to update application:', errors);
+                    alert('応募情報の更新に失敗しました。');
+                },
+            });
+        } else {
+            form.post('/applications', {
+                data: payload,
+                onSuccess: () => {
+                    form.reset();
+                    onClose();
+                    if (onSuccess) onSuccess();
+                },
+            });
+        }
     };
 
     if (!open) return null;
@@ -38,7 +88,7 @@ export default function CreateApplicationModal({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
                 <h2 className="mb-4 text-lg font-semibold">
-                    Create Application
+                    {isEditMode ? 'Edit Application' : 'Create Application'}
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -93,6 +143,12 @@ export default function CreateApplicationModal({
                             required
                         >
                             {KANBAN_STATUSES.map((status) => (
+                                <option key={status} value={status}>
+                                    {status}
+                                </option>
+                            ))}
+                            <option value="その他">その他</option>
+                            {ARCHIVED_STATUSES.map((status) => (
                                 <option key={status} value={status}>
                                     {status}
                                 </option>
@@ -156,7 +212,13 @@ export default function CreateApplicationModal({
                             disabled={form.processing}
                             className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
                         >
-                            {form.processing ? 'Creating...' : 'Create'}
+                            {form.processing
+                                ? isEditMode
+                                    ? 'Updating...'
+                                    : 'Creating...'
+                                : isEditMode
+                                  ? 'Update'
+                                  : 'Create'}
                         </button>
                     </div>
                 </form>

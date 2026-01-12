@@ -20,17 +20,17 @@
 
 ## フロント
 - [x] inertia_page: ダッシュボードページ (Inertia) を作成 + applications を取得して渡す
-- [ ] kanban_ui: Reactでカンバン表示（列固定）を作成（cards を status 毎にレンダリング）
-- [ ] create_modal: Createフォーム（Inertia form）を作成（FormRequest のフィールドと一致）
-- [ ] drag: dnd-kit（or react-beautiful-dnd）でドラッグ実装 + PATCH /applications/{id}/status を呼ぶ（optimistic update）
-- [ ] dev: `./vendor/bin/sail npm run dev` で HMR を確認
+- [x] kanban_ui: Reactでカンバン表示（列固定）を作成（cards を status 毎にレンダリング）
+- [x] create_modal: Createフォーム（Inertia form）を作成（FormRequest のフィールドと一致）
+- [x] drag: dnd-kit（or react-beautiful-dnd）でドラッグ実装 + PATCH /applications/{id}/status を呼ぶ（optimistic update）
+- [x] dev: `./vendor/bin/sail npm run dev` で HMR を確認
 
 ## レスポンシブ・スタイル
-- [ ] tailwind: 最低限の見栄え調整（カード・列・モーダルのレスポンシブ確認）
+- [x] tailwind: 最低限の見栄え調整（カード・列・モーダルのレスポンシブ確認）
 
 ## テスト・確認
 - [x] seed: テスト用データを少量シード（開発確認用）
-- [ ] manual_test: 新規登録→ログイン→登録→カンバン表示→ドラッグ→DB反映 を検証
+- [x] manual_test: 新規登録→ログイン→登録→カンバン表示→ドラッグ→DB反映 を検証
 - [ ] lint/build: `php -l` / `./vendor/bin/sail npm run build`（本番ビルドで失敗しないか確認）
 
 ## デプロイ

@@ -47,9 +47,7 @@ class ApplicationController extends Controller
      */
     public function update(UpdateApplicationRequest $request, Application $application): RedirectResponse
     {
-        if ($application->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('update', $application);
 
         $application->update($request->validated());
 
@@ -61,9 +59,7 @@ class ApplicationController extends Controller
      */
     public function destroy(Application $application): RedirectResponse
     {
-        if ($application->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('delete', $application);
 
         $application->delete();
 
@@ -73,11 +69,9 @@ class ApplicationController extends Controller
     /**
      * Update the status of the specified resource.
      */
-    public function updateStatus(Request $request, Application $application): JsonResponse
+    public function updateStatus(Request $request, Application $application): RedirectResponse|JsonResponse
     {
-        if ($application->user_id !== Auth::id()) {
-            abort(403);
-        }
+        $this->authorize('updateStatus', $application);
 
         $request->validate([
             'status' => ['required', 'string', 'max:50'],
@@ -86,6 +80,10 @@ class ApplicationController extends Controller
         $application->update([
             'status' => $request->input('status'),
         ]);
+
+        if ($request->header('X-Inertia')) {
+            return Redirect::back();
+        }
 
         return response()->json(['success' => true]);
     }
