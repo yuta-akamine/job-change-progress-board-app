@@ -26,11 +26,11 @@
 - [x] dev: `./vendor/bin/sail npm run dev` で HMR を確認
 
 ## レスポンシブ・スタイル
-- [ ] tailwind: 最低限の見栄え調整（カード・列・モーダルのレスポンシブ確認）
+- [x] tailwind: 最低限の見栄え調整（カード・列・モーダルのレスポンシブ確認）
 
 ## テスト・確認
 - [x] seed: テスト用データを少量シード（開発確認用）
-- [ ] manual_test: 新規登録→ログイン→登録→カンバン表示→ドラッグ→DB反映 を検証
+- [x] manual_test: 新規登録→ログイン→登録→カンバン表示→ドラッグ→DB反映 を検証
 - [ ] lint/build: `php -l` / `./vendor/bin/sail npm run build`（本番ビルドで失敗しないか確認）
 
 ## デプロイ
