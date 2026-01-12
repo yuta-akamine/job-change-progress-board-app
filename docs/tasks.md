@@ -37,9 +37,9 @@
 - [x] deploy_prepare: Render/Railway の環境変数準備（DB URL, APP_KEY, APP_DEBUG=false など）
 - [x] deploy_build: 本番ビルドを実行（`npm run build` / `composer install --no-dev --optimize-autoloader`）
 - [x] migrate_prod: 本番で `php artisan migrate --force` を実行
-- [ ] smoke_test: 公開URLで簡単な動作確認（ログイン・カンバン表示・ステータス変更）
+- [x] smoke_test: 公開URLで簡単な動作確認（ログイン・カンバン表示・ステータス変更）
 
 ## 緩衝・ドキュメント
 - [x] commit: 各ステップで小さく commit & push（PR を作る場合は PR 説明に要件を添付）
-- [ ] readme: README に起動方法・デモ手順を記載
+- [x] readme: README に起動方法・デモ手順を記載
 - [x] decisions: 重要な設計判断は docs/decisions.md に記録
