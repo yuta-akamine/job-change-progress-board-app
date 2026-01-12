@@ -19,3 +19,12 @@
   - Symfony 8.0.x パッケージが PHP 8.4 以上を要求するため、本番環境も PHP 8.4 に統一する必要がある
   - デフォルトの PHP 8.2 環境では依存関係の互換性エラーが発生するため
 - 実装: `nixpacks.toml` で PHP 8.4 と必要な拡張機能（pdo_mysql, mbstring, xml, curl, zip, bcmath, gd, intl）を指定
+
+## 2026-1-12 - HTTPS 強制設定（Mixed Content 対策）
+- 本番環境で発生する Mixed Content エラーを解消するため、`URL::forceScheme('https')` を実装
+- 理由:
+  - Railway は HTTPS で配信されるが、リバースプロキシ経由のため Laravel が HTTP と認識してしまう
+  - 生成される URL（アセット、リダイレクト等）が HTTP になり、ブラウザが Mixed Content としてブロックする
+- 実装: `AppServiceProvider::boot()` で条件付きで HTTPS を強制
+  - 条件: `APP_FORCE_HTTPS=true` または `APP_ENV=production`
+  - 開発環境には影響しない安全な実装
