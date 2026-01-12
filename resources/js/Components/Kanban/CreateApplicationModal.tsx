@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { useEffect } from 'react';
 import type { FormEvent } from 'react';
-import { KANBAN_STATUSES } from '@/constants/statuses';
+import { KANBAN_STATUSES, ARCHIVED_STATUSES } from '@/constants/statuses';
 
 interface Application {
     id: number;
@@ -52,12 +52,14 @@ export default function CreateApplicationModal({
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        // normalize empty interview_at to null
-        if (!form.data.interview_at) {
-            form.setData('interview_at', null as any);
-        }
+        // normalize empty interview_at to null in payload only
+        const payload = {
+            ...form.data,
+            interview_at: form.data.interview_at || null,
+        };
         if (isEditMode && application) {
             form.patch(`/applications/${application.id}`, {
+                data: payload,
                 onSuccess: () => {
                     form.reset();
                     onClose();
@@ -70,6 +72,7 @@ export default function CreateApplicationModal({
             });
         } else {
             form.post('/applications', {
+                data: payload,
                 onSuccess: () => {
                     form.reset();
                     onClose();
@@ -140,6 +143,12 @@ export default function CreateApplicationModal({
                             required
                         >
                             {KANBAN_STATUSES.map((status) => (
+                                <option key={status} value={status}>
+                                    {status}
+                                </option>
+                            ))}
+                            <option value="その他">その他</option>
+                            {ARCHIVED_STATUSES.map((status) => (
                                 <option key={status} value={status}>
                                     {status}
                                 </option>
