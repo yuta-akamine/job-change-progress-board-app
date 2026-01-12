@@ -1,59 +1,124 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 就活ステータス管理ボードアプリ
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+就職・転職活動における応募企業・選考状況を「一目で把握できる状態」にすることを目的とした Web アプリケーションです。
 
-## About Laravel
+## 本番環境
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**デプロイ済みURL:** https://job-change-progress-board-app-production.up.railway.app/
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 主な機能
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### 認証
+- ユーザー登録
+- ログイン / ログアウト
+- Laravel Breeze による認証機能
 
-## Learning Laravel
+### 応募情報管理
+応募情報の CRUD 操作が可能です。以下の情報を管理できます：
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+- **企業名**（必須）
+- **職種**（任意）
+- **選考ステータス**（必須）
+- **面接日**（任意）
+- **メモ**（任意）
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### カンバン表示
+応募情報をステータスごとにカンバン形式で一覧表示します。各応募はカードとして表示され、ドラッグ＆ドロップでステータスを変更できます。
 
-## Laravel Sponsors
+### 選考ステータス
+以下のステータスが利用可能です：
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- カジュアル面談
+- 応募予定
+- 書類選考
+- 筆記試験
+- 面接（一次〜最終）
+- 内定
+- 辞退/見送り
 
-### Premium Partners
+## 使用技術スタック
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Backend:** Laravel 12 (PHP 8.4)
+- **Frontend:** React + Inertia.js + Vite
+- **Styling:** Tailwind CSS
+- **Database:** MySQL
+- **開発環境:** Laravel Sail (Docker)
 
-## Contributing
+## ローカル開発環境の起動方法
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### 前提条件
+- Docker と Docker Compose がインストールされていること
+- Composer がインストールされていること
 
-## Code of Conduct
+### セットアップ手順
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **環境変数の設定**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
 
-## Security Vulnerabilities
+2. **依存関係のインストール**
+   ```bash
+   composer install
+   ./vendor/bin/sail npm ci
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+3. **Sail コンテナの起動**
+   ```bash
+   ./vendor/bin/sail up -d
+   ```
 
-## License
+4. **データベースマイグレーションの実行**
+   ```bash
+   ./vendor/bin/sail artisan migrate
+   ```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+5. **フロントエンド開発サーバーの起動（HMR 有効）**
+   ```bash
+   ./vendor/bin/sail npm run dev
+   ```
+
+6. **アプリケーションへのアクセス**
+   - ブラウザで http://localhost にアクセス
+
+### よく使うコマンド
+
+- **コンテナの停止:** `./vendor/bin/sail down`
+- **コンテナの再起動:** `./vendor/bin/sail restart`
+- **Artisan コマンド実行:** `./vendor/bin/sail artisan [command]`
+- **NPM コマンド実行:** `./vendor/bin/sail npm [command]`
+- **本番ビルド:** `./vendor/bin/sail npm run build`
+
+## 設計上の重要な意思決定
+
+### PHP 8.4 の使用
+本番環境（Railway）では `nixpacks.toml` で PHP 8.4 を明示的に指定しています。開発環境（Laravel Sail）も PHP 8.4 を使用しており、Symfony 8.0.x パッケージが PHP 8.4 以上を要求するため、本番環境も PHP 8.4 に統一しています。
+
+### HTTPS 強制設定
+本番環境で Mixed Content エラーを解消するため、`AppServiceProvider::boot()` で条件付きで HTTPS を強制しています。条件は `APP_FORCE_HTTPS=true` または `APP_ENV=production` です。開発環境には影響しない安全な実装となっています。
+
+### ステータス設計
+ステータスは `string` カラムでアプリ層で列挙しています。ENUM 型は使用せず、将来のステータス追加を容易にする設計としています。
+
+### 認可
+応募情報は `user_id == auth()->id()` の条件で認可されており、自分のデータのみ操作可能です。
+
+## セキュリティ
+
+- 認証必須（未ログインでは操作不可）
+- 応募情報は自分のデータのみ操作可能
+- CSRF 対策は Laravel 標準機構を利用
+
+## ドキュメント
+
+詳細な要件定義、アーキテクチャ、設計判断については `docs/` ディレクトリを参照してください：
+
+- `docs/requirements.md` - 要件定義
+- `docs/architecture.md` - アーキテクチャ設計
+- `docs/decisions.md` - 設計上の重要な意思決定
+- `docs/manual_test.md` - 完成判定チェックリスト
+
+## ライセンス
+
+このプロジェクトはオープンソースソフトウェアとして MIT ライセンスの下で公開されています。
