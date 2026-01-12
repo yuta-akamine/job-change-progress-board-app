@@ -1,27 +1,6 @@
+[variables]
+    NIXPACKS_PHP_VERSION = '8.4'
+    PHP_VERSION = '8.4'
+
 [phases.setup]
-nixPkgs = [
-    "php84",
-    "php84Extensions.pdo_mysql",
-    "php84Extensions.mbstring",
-    "php84Extensions.xml",
-    "php84Extensions.curl",
-    "php84Extensions.zip",
-    "php84Extensions.bcmath",
-    "php84Extensions.gd",
-    "php84Extensions.intl",
-    "nodejs_20"
-]
-
-[phases.install]
-cmds = [
-    "composer install --optimize-autoloader --no-scripts --no-interaction",
-    "npm ci"
-]
-
-[phases.build]
-cmds = [
-    "npm run build"
-]
-
-[start]
-cmd = "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"
+    nixPkgs = ['php84', 'php84Extensions.pdo_mysql', 'nodejs_20']
